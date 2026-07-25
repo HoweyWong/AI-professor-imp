@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "AI计划进度检查",
+  "description": "手动触发 AI 转型计划监督，同时检查 RAG-CMS 项目进度和知识储备周计划，并发送 macOS 通知。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "./AI-Career-Manual/automation/ai-career-status.sh",
+    "timeout": 30
+  }
+}
