@@ -21,17 +21,28 @@
 - `POST /v1/chat/completions`：调用兼容 OpenAI Chat Completions API 的上游模型服务；
 - 未配置模型环境变量时，问答接口返回明确的 `503`，不会发送外部请求。
 
-上传接口将原文件、提取后的文本和元数据保存到 `data/documents/<document_id>/`。数据目录已被 Git 忽略。当前仅支持 `.md`、`.markdown` 和 `.txt`，文件最大 5 MiB。
+上传接口将原文件、提取后的文本和元数据保存到项目根目录的 `data/documents/<document_id>/`，即默认位于 `RAG-CMS/data/documents/`，与服务从哪个目录启动无关。数据目录已被 Git 忽略。可通过 `RAG_CMS_DATA_DIR` 覆盖：绝对路径会直接使用，相对路径则以项目根目录为基准。当前仅支持 `.md`、`.markdown` 和 `.txt`，文件最大 5 MiB。
 
 ## 本地启动
 
+首次初始化：
+
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+.venv/bin/pip install -r requirements.txt
 cp .env.example .env
-export $(grep -v '^#' .env | xargs)
-uvicorn app.main:app --reload
+```
+
+在 `.env` 中填写模型配置后，后续每次启动只需执行：
+
+```bash
+./start.sh
+```
+
+该脚本会自动激活虚拟环境、加载 `.env` 并以热重载模式启动服务。可将 Uvicorn 参数直接传给脚本，例如：
+
+```bash
+./start.sh --port 8080
 ```
 
 健康检查：

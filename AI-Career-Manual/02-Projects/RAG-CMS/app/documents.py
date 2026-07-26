@@ -8,10 +8,17 @@ from fastapi import HTTPException, UploadFile
 
 ALLOWED_SUFFIXES = {".md", ".markdown", ".txt"}
 MAX_DOCUMENT_BYTES = 5 * 1024 * 1024
+PROJECT_DIRECTORY = Path(__file__).resolve().parent.parent
+DEFAULT_DATA_DIRECTORY = PROJECT_DIRECTORY / "data" / "documents"
 
 
 def data_directory() -> Path:
-    return Path(os.getenv("RAG_CMS_DATA_DIR", "data/documents"))
+    configured_directory = os.getenv("RAG_CMS_DATA_DIR")
+    if not configured_directory:
+        return DEFAULT_DATA_DIRECTORY
+
+    directory = Path(configured_directory).expanduser()
+    return directory if directory.is_absolute() else PROJECT_DIRECTORY / directory
 
 
 async def save_document(file: UploadFile) -> dict[str, object]:
