@@ -17,8 +17,11 @@
 ## 当前可运行功能
 
 - `GET /health`：服务健康检查；
+- `POST /v1/documents`：上传并解析 UTF-8 编码的 Markdown 或文本文件；
 - `POST /v1/chat/completions`：调用兼容 OpenAI Chat Completions API 的上游模型服务；
 - 未配置模型环境变量时，问答接口返回明确的 `503`，不会发送外部请求。
+
+上传接口将原文件、提取后的文本和元数据保存到 `data/documents/<document_id>/`。数据目录已被 Git 忽略。当前仅支持 `.md`、`.markdown` 和 `.txt`，文件最大 5 MiB。
 
 ## 本地启动
 

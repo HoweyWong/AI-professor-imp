@@ -4,8 +4,10 @@ import os
 from typing import Literal
 from urllib import error, request
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile
 from pydantic import BaseModel, Field
+
+from app.documents import save_document
 
 app = FastAPI(title="RAG-CMS API", version="0.1.0")
 
@@ -47,6 +49,11 @@ def invoke_model(payload: dict, base_url: str, api_key: str) -> dict:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "rag-cms-api"}
+
+
+@app.post("/v1/documents", status_code=201)
+async def upload_document(file: UploadFile) -> dict[str, object]:
+    return await save_document(file)
 
 
 @app.post("/v1/chat/completions")
