@@ -7,7 +7,8 @@
 - Shortcuts：可将监督脚本包装为桌面或菜单栏快捷指令
 - Notification Center：发送开始提醒和状态提醒
 - `say`：可选语音提醒
-- Kiro Hook：在工作区内手动触发计划检查
+- Kiro Hook：在 Kiro 中手动触发计划检查
+- Codex：按仓库根目录 `AGENTS.md` 中的约定执行同一检查脚本
 
 ## 默认安排
 
@@ -27,6 +28,14 @@
 ```
 
 脚本会读取本工作区的首周任务清单，显示第一个未完成任务，并发送一条 macOS 通知。它不会读取日历、提醒事项、浏览记录或其他个人文件。
+
+在 Codex 或仅需要终端结果时执行：
+
+```bash
+./AI-Career-Manual/automation/ai-career-status.sh --no-notify
+```
+
+脚本会自动选取 `05-Weekly-Reviews/` 中日期最新的 `knowledge-week-*.md`，避免每周修改脚本。Kiro Hook 继续调用默认模式并发送通知。
 
 ## 知识储备监督
 

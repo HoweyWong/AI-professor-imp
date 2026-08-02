@@ -3,7 +3,17 @@ set -euo pipefail
 
 WORKSPACE="${0:A:h:h}"
 TASK_FILE="$WORKSPACE/02-Projects/RAG-CMS/week-01.md"
-KNOWLEDGE_FILE="$WORKSPACE/05-Weekly-Reviews/knowledge-week-2026-07-25.md"
+KNOWLEDGE_FILE=$(find "$WORKSPACE/05-Weekly-Reviews" -maxdepth 1 -type f -name 'knowledge-week-*.md' -print | sort | tail -n 1)
+NOTIFY=true
+
+case "${1:-}" in
+  "") ;;
+  --no-notify) NOTIFY=false ;;
+  *)
+    print -u2 "用法：$0 [--no-notify]"
+    exit 2
+    ;;
+esac
 
 if [[ ! -f "$TASK_FILE" || ! -f "$KNOWLEDGE_FILE" ]]; then
   print -u2 "找不到项目或知识周计划文件"
@@ -32,7 +42,13 @@ fi
 TITLE="AI 转型计划｜项目与知识检查"
 MESSAGE="项目 ${DONE_COUNT}/${TOTAL_COUNT}；知识 ${KNOWLEDGE_DONE}/${KNOWLEDGE_TOTAL}。项目：${NEXT_TASK}。知识：${NEXT_KNOWLEDGE}。"
 
-osascript -e 'display notification "'"${MESSAGE//"/\\"}"'" with title "'"${TITLE//"/\\"}"'"'
+if [[ "$NOTIFY" == true ]]; then
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e 'display notification "'"${MESSAGE//"/\\"}"'" with title "'"${TITLE//"/\\"}"'"'
+  else
+    print -u2 "提示：当前系统不支持 macOS 通知，仅输出检查结果。"
+  fi
+fi
 printf '%s\n' "$TITLE"
 printf '%s\n' "$MESSAGE"
 printf '项目文件：%s\n知识文件：%s\n' "$TASK_FILE" "$KNOWLEDGE_FILE"
