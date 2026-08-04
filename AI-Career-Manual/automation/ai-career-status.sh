@@ -2,7 +2,7 @@
 set -euo pipefail
 
 WORKSPACE="${0:A:h:h}"
-TASK_FILE="$WORKSPACE/02-Projects/RAG-CMS/week-01.md"
+TASK_FILE=$(find "$WORKSPACE/02-Projects/RAG-CMS" -maxdepth 1 -type f -name 'week-*.md' -print | sort | tail -n 1)
 KNOWLEDGE_FILE=$(find "$WORKSPACE/05-Weekly-Reviews" -maxdepth 1 -type f -name 'knowledge-week-*.md' -print | sort | tail -n 1)
 NOTIFY=true
 
@@ -15,7 +15,7 @@ case "${1:-}" in
     ;;
 esac
 
-if [[ ! -f "$TASK_FILE" || ! -f "$KNOWLEDGE_FILE" ]]; then
+if [[ -z "$TASK_FILE" || -z "$KNOWLEDGE_FILE" || ! -f "$TASK_FILE" || ! -f "$KNOWLEDGE_FILE" ]]; then
   print -u2 "找不到项目或知识周计划文件"
   exit 1
 fi
@@ -30,13 +30,13 @@ NEXT_KNOWLEDGE=$(awk '/^- \[ \]/{print; exit}' "$KNOWLEDGE_FILE")
 if [[ -n "$NEXT_TASK" ]]; then
   NEXT_TASK=$(printf '%s\n' "$NEXT_TASK" | sed 's/^- \[ \] //')
 else
-  NEXT_TASK="项目首周任务已完成，请进行评测和复盘"
+  NEXT_TASK="最新项目周计划已完成，请复盘并创建下一周计划"
 fi
 
 if [[ -n "$NEXT_KNOWLEDGE" ]]; then
   NEXT_KNOWLEDGE=$(printf '%s\n' "$NEXT_KNOWLEDGE" | sed 's/^- \[ \] //')
 else
-  NEXT_KNOWLEDGE="本周知识任务已完成，请记录下周主题"
+  NEXT_KNOWLEDGE="最新知识周计划已完成，请复盘并创建下一周主题"
 fi
 
 TITLE="AI 转型计划｜项目与知识检查"

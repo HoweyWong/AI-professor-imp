@@ -4,6 +4,10 @@
 
 面向 CMS 需求书、设计文档、会议纪要和技术标准，提供带引用来源的智能问答能力。
 
+## 学习文档
+
+- [RAG-CMS 实现解读｜Java / Spring 开发者视角](RAG-CMS-Java开发者实现解读.md)：从领域对象、接口链路、文件存储、Embedding、向量检索、Prompt、引用、测试和 Spring Boot 演进路线理解当前代码。
+
 ## 首期范围
 
 - 文档上传：PDF、Word、Markdown 或文本
@@ -45,7 +49,7 @@ cp .env.example .env
 该脚本会自动激活虚拟环境、加载 `.env` 并以热重载模式启动服务。可将 Uvicorn 参数直接传给脚本，例如：
 
 ```bash
-./start.sh --port 8080
+./start.sh --port 8000
 ```
 
 健康检查：
@@ -59,7 +63,7 @@ curl http://127.0.0.1:8000/health
 完成文档上传、切分和向量化后，可对单个文档提问：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/v1/documents/<document_id>/questions \
+curl -X POST http://127.0.0.1:8000/v1/documents/10da35e7-0b7b-4541-9d95-dc70dffc5240/questions \
   -H 'Content-Type: application/json' \
   -d '{"question":"这份文档的发布前置条件是什么？","top_k":3}'
 ```
