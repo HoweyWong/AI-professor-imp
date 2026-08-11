@@ -78,6 +78,29 @@ curl -X POST http://127.0.0.1:8000/v1/documents/10da35e7-0b7b-4541-9d95-dc70dffc
 - 复杂 Agent 编排
 - 本地模型部署
 
+## 本地评测
+
+`evals/week-02-cases.json` 保存 10 个机器可读评测用例。每题包含问题、期望答案要点、人工标注的相关 Chunk，以及一组或多组充分证据集合。充分证据集合中的任意一组被完整命中时，检索上下文即具备回答该题的最低证据；`app/evaluation.py` 会校验其格式和它与相关 Chunk 的包含关系，并提供不依赖网络的 `recall_at_k` 与宏平均 `mean_recall_at_k` 纯函数。
+
+当前 Recall@K 只衡量检索结果覆盖了多少人工标注的相关 Chunk，不代表回答正确率或引用忠实性。运行相关单元测试：
+
+```bash
+.venv/bin/python -m unittest tests.test_evaluation -v
+```
+
+为固定语料完成上传、切分和向量化后，可以运行真实检索评测。命令只调用 Embedding，不调用回答模型：
+
+```bash
+set -a
+source .env
+set +a
+.venv/bin/python -m app.eval_retrieval \
+  --document-id 10da35e7-0b7b-4541-9d95-dc70dffc5240 \
+  --k 1 3
+```
+
+输出包含每题的相关 Chunk、实际检索顺序、Recall@1、Recall@3 及宏平均汇总。文档 ID 是本地运行数据，实际使用时替换为当前固定语料对应的 ID。
+
 ## 建议技术栈
 
 - Python：FastAPI、Pydantic、pytest
