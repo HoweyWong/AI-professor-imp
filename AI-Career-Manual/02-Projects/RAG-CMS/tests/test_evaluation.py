@@ -4,7 +4,14 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from app.eval_retrieval import run_retrieval_evaluation
-from app.evaluation import build_retrieval_report, load_evaluation_cases, mean_recall_at_k, recall_at_k
+from app.evaluation import (
+    build_retrieval_report,
+    load_evaluation_cases,
+    mean_recall_at_k,
+    mean_sufficient_evidence_hit_at_k,
+    recall_at_k,
+    sufficient_evidence_hit_at_k,
+)
 
 
 class RecallAtKTests(unittest.TestCase):
@@ -35,10 +42,45 @@ class RecallAtKTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "数量一致"):
             mean_recall_at_k([[0]], [[0], [1]], k=1)
 
+    def test_sufficient_evidence_hit_accepts_any_complete_alternative(self) -> None:
+        self.assertEqual(sufficient_evidence_hit_at_k([2, 0], [[1, 3], [2]], k=1), 1)
+
+    def test_sufficient_evidence_hit_requires_the_complete_group(self) -> None:
+        self.assertEqual(sufficient_evidence_hit_at_k([2, 2], [[1, 2]], k=2), 0)
+
+    def test_sufficient_evidence_hit_changes_when_k_completes_a_group(self) -> None:
+        retrieved = [1, 3, 0]
+
+        self.assertEqual(sufficient_evidence_hit_at_k(retrieved, [[1, 3]], k=1), 0)
+        self.assertEqual(sufficient_evidence_hit_at_k(retrieved, [[1, 3]], k=2), 1)
+
+    def test_sufficient_evidence_hit_rejects_empty_evidence(self) -> None:
+        with self.assertRaisesRegex(ValueError, "不能为空"):
+            sufficient_evidence_hit_at_k([0], [[]], k=1)
+
+    def test_calculates_mean_sufficient_evidence_hit(self) -> None:
+        actual = mean_sufficient_evidence_hit_at_k(
+            retrieved_by_case=[[1], [2]],
+            sufficient_evidence_sets_by_case=[[[1]], [[2, 3]]],
+            k=1,
+        )
+
+        self.assertEqual(actual, 0.5)
+
     def test_builds_per_case_and_summary_report(self) -> None:
         cases = [
-            {"id": 1, "question": "问题一", "relevant_chunk_indexes": [1]},
-            {"id": 2, "question": "问题二", "relevant_chunk_indexes": [1, 2]},
+            {
+                "id": 1,
+                "question": "问题一",
+                "relevant_chunk_indexes": [1],
+                "sufficient_evidence_sets": [[1]],
+            },
+            {
+                "id": 2,
+                "question": "问题二",
+                "relevant_chunk_indexes": [1, 2],
+                "sufficient_evidence_sets": [[1, 2]],
+            },
         ]
 
         report = build_retrieval_report(cases, [[1, 0], [2, 0]], [1, 2])
@@ -46,6 +88,9 @@ class RecallAtKTests(unittest.TestCase):
         self.assertEqual(report["results"][0]["recall_at_1"], 1.0)
         self.assertEqual(report["results"][1]["recall_at_2"], 0.5)
         self.assertEqual(report["summary"]["mean_recall_at_1"], 0.75)
+        self.assertEqual(report["results"][0]["sufficient_evidence_hit_at_1"], 1)
+        self.assertEqual(report["results"][1]["sufficient_evidence_hit_at_2"], 0)
+        self.assertEqual(report["summary"]["mean_sufficient_evidence_hit_at_1"], 0.5)
 
     def test_loads_alternative_sufficient_evidence_sets(self) -> None:
         content = '{"cases": [' \
@@ -116,6 +161,8 @@ class RecallAtKTests(unittest.TestCase):
 
         self.assertEqual(report["summary"]["mean_recall_at_1"], 0.75)
         self.assertEqual(report["summary"]["mean_recall_at_2"], 1.0)
+        self.assertEqual(report["summary"]["mean_sufficient_evidence_hit_at_1"], 0.5)
+        self.assertEqual(report["summary"]["mean_sufficient_evidence_hit_at_2"], 1.0)
         embed.assert_called_once_with(["A", "B"])
         self.assertEqual(search.call_count, 2)
 

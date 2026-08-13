@@ -34,7 +34,7 @@ def run_retrieval_evaluation(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="运行 RAG-CMS 检索 Recall@K 评测")
+    parser = argparse.ArgumentParser(description="运行 RAG-CMS 检索 Recall@K 与充分证据命中评测")
     parser.add_argument("--document-id", required=True, help="已完成向量化的文档 ID")
     parser.add_argument("--cases", type=Path, default=DEFAULT_CASES_PATH, help="评测用例 JSON")
     parser.add_argument("--k", type=int, nargs="+", default=[1, 3], help="需要计算的 K 值")
