@@ -58,6 +58,67 @@ def load_evaluation_cases(path: Path) -> list[dict[str, object]]:
     return validated
 
 
+def load_manual_scores(
+    path: Path,
+    cases: Sequence[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Load manual answer coverage and citation faithfulness for every case."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    scores = payload.get("scores") if isinstance(payload, dict) else None
+    if not isinstance(scores, list) or not scores:
+        raise ValueError("人工评分文件必须包含非空 scores 数组")
+
+    expected_points_by_id = {
+        case["id"]: case.get("expected_points")
+        for case in cases
+    }
+    scores_by_id: dict[object, dict[str, object]] = {}
+    for score in scores:
+        if not isinstance(score, dict):
+            raise ValueError("每条人工评分必须是对象")
+        case_id = score.get("case_id")
+        covered = score.get("covered_point_indexes")
+        citation_faithful = score.get("citation_faithful")
+        unsupported_claims = score.get("unsupported_claims")
+        notes = score.get("notes")
+        if (
+            not isinstance(case_id, int)
+            or isinstance(case_id, bool)
+            or case_id in scores_by_id
+        ):
+            raise ValueError("人工评分 case_id 必须是唯一整数")
+        expected_points = expected_points_by_id.get(case_id)
+        if not isinstance(expected_points, list) or not expected_points:
+            raise ValueError(f"人工评分包含未知用例 {case_id} 或该用例缺少期望要点")
+        if (
+            not isinstance(covered, list)
+            or not all(
+                isinstance(index, int) and not isinstance(index, bool)
+                for index in covered
+            )
+            or len(set(covered)) != len(covered)
+            or any(index < 0 or index >= len(expected_points) for index in covered)
+        ):
+            raise ValueError(f"用例 {case_id} 的已覆盖要点序号无效")
+        if not isinstance(citation_faithful, bool):
+            raise ValueError(f"用例 {case_id} 的引用忠实性必须是布尔值")
+        if (
+            not isinstance(unsupported_claims, list)
+            or not all(isinstance(claim, str) and claim.strip() for claim in unsupported_claims)
+        ):
+            raise ValueError(f"用例 {case_id} 的无依据主张必须是字符串数组")
+        if citation_faithful and unsupported_claims:
+            raise ValueError(f"用例 {case_id} 的引用忠实性与无依据主张相互矛盾")
+        if not isinstance(notes, str) or not notes.strip():
+            raise ValueError(f"用例 {case_id} 的人工评分备注不能为空")
+        scores_by_id[case_id] = score
+
+    expected_ids = set(expected_points_by_id)
+    if set(scores_by_id) != expected_ids:
+        raise ValueError("人工评分必须完整覆盖全部评测用例，且不能包含额外用例")
+    return [scores_by_id[case["id"]] for case in cases]
+
+
 def recall_at_k(
     retrieved_chunk_indexes: Sequence[int],
     relevant_chunk_indexes: Iterable[int],
@@ -128,6 +189,19 @@ def mean_sufficient_evidence_hit_at_k(
     return sum(hits) / len(hits)
 
 
+def answer_point_coverage(
+    covered_point_indexes: Iterable[int],
+    expected_point_count: int,
+) -> float:
+    """Calculate manually judged expected-point coverage for one answer."""
+    if expected_point_count < 1:
+        raise ValueError("期望要点数量必须大于等于 1")
+    covered = set(covered_point_indexes)
+    if any(index < 0 or index >= expected_point_count for index in covered):
+        raise ValueError("已覆盖要点序号超出范围")
+    return len(covered) / expected_point_count
+
+
 def build_retrieval_report(
     cases: Sequence[dict[str, object]],
     retrieved_by_case: Sequence[Sequence[int]],
@@ -181,3 +255,49 @@ def build_retrieval_report(
     }
     summary = {**recall_summary, **evidence_summary}
     return {"case_count": len(cases), "results": results, "summary": summary}
+
+
+def build_four_layer_report(
+    cases: Sequence[dict[str, object]],
+    retrieved_by_case: Sequence[Sequence[int]],
+    ks: Sequence[int],
+    manual_scores: Sequence[dict[str, object]],
+) -> dict[str, object]:
+    """Combine retrieval metrics with explicitly manual answer and citation scores."""
+    if len(cases) != len(manual_scores):
+        raise ValueError("人工评分数量必须与评测用例数量一致")
+    scores_by_id = {score.get("case_id"): score for score in manual_scores}
+    case_ids = [case["id"] for case in cases]
+    if len(scores_by_id) != len(manual_scores) or set(scores_by_id) != set(case_ids):
+        raise ValueError("人工评分必须与评测用例一一对应")
+
+    report = build_retrieval_report(cases, retrieved_by_case, ks)
+    coverages = []
+    citation_results = []
+    for case, result in zip(cases, report["results"]):
+        score = scores_by_id[case["id"]]
+        expected_points = case.get("expected_points")
+        if not isinstance(expected_points, list) or not expected_points:
+            raise ValueError(f"评测用例 {case['id']} 必须包含期望答案要点")
+        coverage = answer_point_coverage(
+            score["covered_point_indexes"],
+            len(expected_points),
+        )
+        citation_faithful = score["citation_faithful"]
+        coverages.append(coverage)
+        citation_results.append(int(citation_faithful))
+        result["manual_evaluation"] = {
+            "expected_points": expected_points,
+            "covered_point_indexes": score["covered_point_indexes"],
+            "answer_point_coverage": coverage,
+            "citation_faithful": citation_faithful,
+            "unsupported_claims": score["unsupported_claims"],
+            "notes": score["notes"],
+        }
+
+    report["summary"].update({
+        "mean_answer_point_coverage": sum(coverages) / len(coverages),
+        "citation_faithfulness_rate": sum(citation_results) / len(citation_results),
+    })
+    report["answer_and_citation_scoring_method"] = "manual"
+    return report

@@ -82,6 +82,8 @@ curl -X POST http://127.0.0.1:8000/v1/documents/10da35e7-0b7b-4541-9d95-dc70dffc
 
 `evals/week-02-cases.json` 保存 10 个机器可读评测用例。每题包含问题、期望答案要点、人工标注的相关 Chunk，以及一组或多组充分证据集合。充分证据集合中的任意一组被完整命中时，检索上下文即具备回答该题的最低证据；`app/evaluation.py` 会校验其格式和它与相关 Chunk 的包含关系，并提供不依赖网络的 Recall@K、充分证据命中及宏平均纯函数。
 
+`evals/week-03-manual-scores.json` 保存 2026-08-02 与 2026-08-04 基线回答的人工评分。`covered_point_indexes` 标记已覆盖的期望要点，由程序计算覆盖率；`citation_faithful` 和 `unsupported_claims` 分别记录引用忠实性及无依据主张。加载时要求人工评分完整覆盖全部评测用例。程序只校验并汇总人工判断，不会把它伪装成自动客观评分。
+
 当前 Recall@K 只衡量检索结果覆盖了多少人工标注的相关 Chunk，不代表回答正确率或引用忠实性。运行相关单元测试：
 
 ```bash
@@ -96,10 +98,64 @@ source .env
 set +a
 .venv/bin/python -m app.eval_retrieval \
   --document-id 10da35e7-0b7b-4541-9d95-dc70dffc5240 \
-  --k 1 3
+  --k 1 3 \
+  --manual-scores evals/week-03-manual-scores.json
 ```
 
-输出包含每题的相关 Chunk、充分证据集合、实际检索顺序、Recall@1/3、充分证据命中@1/3 及两类宏平均汇总。充分证据命中是布尔指标：Top-K 完整包含任意一组充分证据时为 `1`，否则为 `0`。文档 ID 是本地运行数据，实际使用时替换为当前固定语料对应的 ID。
+输出包含每题的相关 Chunk、充分证据集合、实际检索顺序、Recall@1/3、充分证据命中@1/3、人工答案要点覆盖、引用忠实性及汇总。充分证据命中是布尔指标：Top-K 完整包含任意一组充分证据时为 `1`，否则为 `0`。不传 `--manual-scores` 时只生成检索层报告，避免把旧回答的人工评分错误绑定到新的评测运行。文档 ID 是本地运行数据，实际使用时替换为当前固定语料对应的 ID。
+
+若外部 Embedding 服务不可用或不获准接收评测问题，可重放已保存的真实检索快照。快照绑定语料哈希、用例哈希、Chunk 参数、Embedding 模型、文档 ID 和原始运行记录；此模式不会发送外部请求：
+
+```bash
+.venv/bin/python -m app.eval_retrieval \
+  --document-id 10da35e7-0b7b-4541-9d95-dc70dffc5240 \
+  --k 1 3 \
+  --manual-scores evals/week-03-manual-scores.json \
+  --retrieval-snapshot evals/week-03-retrieval-snapshot.json \
+  --output evals/week-03-complete-report.json
+```
+
+离线重放验证的是“保存的真实检索结果在当前 Ground Truth 和评分规则下会得到什么报告”，不能证明当前外部 Embedding 服务仍会返回相同顺序。需要比较模型或参数变化时，必须在目标服务获得明确授权后重新运行在线评测并生成新的快照。
+
+## Java 调用
+
+`java-client/` 提供面向 Java 11、Spring Boot 2.7.18 的最小 `WebClient` 客户端。它将问题和 `top_k` 发送给文档问答接口，并把答案及引用映射为 DTO；502、503、超时和一般传输故障会映射为不同的 `FailureType`。
+
+```java
+RagCmsClient client = new RagCmsClient(
+        "http://127.0.0.1:8000",
+        Duration.ofSeconds(35)
+);
+QuestionResponse response = client.ask(documentId, "发布前要做什么？", 3);
+```
+
+运行 Java 本地契约测试：
+
+```bash
+cd java-client
+mvn test
+```
+
+测试使用 `127.0.0.1` 随机端口上的临时假服务，不调用 Python、Embedding 或回答模型。它验证 JSON 契约和错误边界，不代表真实 RAG 链路已经完成端到端验收。
+
+进一步验证 Java 客户端与真实 FastAPI 路由的契约时，在 RAG-CMS 根目录启动明确的本地替身服务：
+
+```bash
+LLM_BASE_URL=http://contract-model.invalid/v1 \
+LLM_API_KEY=contract-key \
+LLM_MODEL=contract-model \
+.venv/bin/python -m uvicorn tests.contract_server:app --host 127.0.0.1 --port 18080
+```
+
+另开终端运行 Java→Python 契约测试：
+
+```bash
+cd java-client
+RAG_CMS_CONTRACT_BASE_URL=http://127.0.0.1:18080 \
+  mvn -q -Dtest=RagCmsPythonContractTest test
+```
+
+该测试会穿过真实 HTTP、FastAPI 路由、请求校验、Prompt 构造、响应和 Java DTO 映射；`tests/contract_server.py` 明确替换 Embedding、检索和回答模型，因此不会访问外部服务，也不能证明真实模型、真实向量或真实数据授权已经通过验收。
 
 ## 建议技术栈
 

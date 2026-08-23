@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "run_id": "week-02-real-retrieval-2026-08-06",
+  "retrieved_at": "2026-08-06",
+  "source_record": "evals/week-02-results.md",
+  "source_commit": "4a17f453772901d5b4519fbaff967f8b2d91c3e4",
+  "document_id": "10da35e7-0b7b-4541-9d95-dc70dffc5240",
+  "fixture": "evals/fixtures/cms-release-guide.md",
+  "fixture_sha256": "9f839a081365732e49607d59d02a11f0db4e70903146153ca90e12864b88aff2",
+  "cases_sha256": "3c050154d103ee654f877f258af23cfde4d25baaf7fcccf44756627466f2eecd",
+  "chunking": {
+    "chunk_size": 250,
+    "chunk_overlap": 50,
+    "chunk_count": 4
+  },
+  "embedding_model": "text-embedding-v4",
+  "captured_k": 3,
+  "results": [
+    {"case_id": 1, "retrieved_chunk_indexes": [0, 3, 1]},
+    {"case_id": 2, "retrieved_chunk_indexes": [0, 3, 1]},
+    {"case_id": 3, "retrieved_chunk_indexes": [1, 2, 3]},
+    {"case_id": 4, "retrieved_chunk_indexes": [1, 0, 3]},
+    {"case_id": 5, "retrieved_chunk_indexes": [1, 3, 0]},
+    {"case_id": 6, "retrieved_chunk_indexes": [1, 3, 2]},
+    {"case_id": 7, "retrieved_chunk_indexes": [2, 1, 0]},
+    {"case_id": 8, "retrieved_chunk_indexes": [1, 2, 0]},
+    {"case_id": 9, "retrieved_chunk_indexes": [0, 3, 1]},
+    {"case_id": 10, "retrieved_chunk_indexes": [3, 0, 1]}
+  ]
+}

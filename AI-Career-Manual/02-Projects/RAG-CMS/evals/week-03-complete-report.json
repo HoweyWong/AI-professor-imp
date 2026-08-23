@@ -1,0 +1,418 @@
+{
+  "document_id": "10da35e7-0b7b-4541-9d95-dc70dffc5240",
+  "embedding_model": "text-embedding-v4",
+  "ks": [
+    1,
+    3
+  ],
+  "retrieval_mode": "saved_real_retrieval_snapshot",
+  "input_sha256": {
+    "cases": "3c050154d103ee654f877f258af23cfde4d25baaf7fcccf44756627466f2eecd",
+    "manual_scores": "89f501750b22d3b093aebdeb984a30ea266e6df29b67dd92632def2ac140b87c",
+    "retrieval_snapshot": "f22a5496dfc27478eda8f391257c6eeeacd73e52d5197649d40ab3de2549521d"
+  },
+  "retrieval_snapshot_metadata": {
+    "schema_version": 1,
+    "run_id": "week-02-real-retrieval-2026-08-06",
+    "retrieved_at": "2026-08-06",
+    "source_record": "evals/week-02-results.md",
+    "source_commit": "4a17f453772901d5b4519fbaff967f8b2d91c3e4",
+    "document_id": "10da35e7-0b7b-4541-9d95-dc70dffc5240",
+    "fixture": "evals/fixtures/cms-release-guide.md",
+    "fixture_sha256": "9f839a081365732e49607d59d02a11f0db4e70903146153ca90e12864b88aff2",
+    "cases_sha256": "3c050154d103ee654f877f258af23cfde4d25baaf7fcccf44756627466f2eecd",
+    "chunking": {
+      "chunk_size": 250,
+      "chunk_overlap": 50,
+      "chunk_count": 4
+    },
+    "embedding_model": "text-embedding-v4",
+    "captured_k": 3
+  },
+  "case_count": 10,
+  "results": [
+    {
+      "id": 1,
+      "question": "生产环境固定发布窗口是什么时间？",
+      "relevant_chunk_indexes": [
+        0
+      ],
+      "sufficient_evidence_sets": [
+        [
+          0
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        0,
+        3,
+        1
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "每周二和周四",
+          "21:00–22:00"
+        ],
+        "covered_point_indexes": [
+          0,
+          1
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "固定发布窗口完整，引用支持回答。"
+      }
+    },
+    {
+      "id": 2,
+      "question": "发布前必须完成哪些检查？",
+      "relevant_chunk_indexes": [
+        0
+      ],
+      "sufficient_evidence_sets": [
+        [
+          0
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        0,
+        3,
+        1
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "单元测试",
+          "接口回归测试",
+          "数据库备份",
+          "无未处理的 P1 告警"
+        ],
+        "covered_point_indexes": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "四项发布前检查完整。"
+      }
+    },
+    {
+      "id": 3,
+      "question": "数据库结构变更时额外需要准备什么？",
+      "relevant_chunk_indexes": [
+        0,
+        1
+      ],
+      "sufficient_evidence_sets": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        2,
+        3
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 0.5,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "经过验证的回滚 SQL"
+        ],
+        "covered_point_indexes": [
+          0
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "经过验证的回滚 SQL 要求完整。"
+      }
+    },
+    {
+      "id": 4,
+      "question": "发布包版本号采用什么格式？",
+      "relevant_chunk_indexes": [
+        1
+      ],
+      "sufficient_evidence_sets": [
+        [
+          1
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        0,
+        3
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "cms-YYYYMMDD-N",
+          "同一版本号不得复用"
+        ],
+        "covered_point_indexes": [
+          0
+        ],
+        "answer_point_coverage": 0.5,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "答出版本格式，遗漏同一版本号不得复用。"
+      }
+    },
+    {
+      "id": 5,
+      "question": "部署完成后到观察期结束前要做什么？",
+      "relevant_chunk_indexes": [
+        1
+      ],
+      "sufficient_evidence_sets": [
+        [
+          1
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        3,
+        0
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "检查健康接口",
+          "三条核心业务冒烟用例",
+          "30 分钟观察期"
+        ],
+        "covered_point_indexes": [
+          0,
+          1,
+          2
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": false,
+        "unsupported_claims": [
+          "未回滚且观察期结束后提交事故初报"
+        ],
+        "notes": "三个核心流程要点均覆盖，但额外条件关系没有来源支持。"
+      }
+    },
+    {
+      "id": 6,
+      "question": "观察期重点关注哪些指标？",
+      "relevant_chunk_indexes": [
+        1
+      ],
+      "sufficient_evidence_sets": [
+        [
+          1
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        3,
+        2
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "HTTP 5xx 错误率",
+          "接口 P95 延迟",
+          "数据库连接池使用率"
+        ],
+        "covered_point_indexes": [
+          0,
+          1,
+          2
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "三项观察指标完整。"
+      }
+    },
+    {
+      "id": 7,
+      "question": "哪些情况必须回滚？",
+      "relevant_chunk_indexes": [
+        1,
+        2
+      ],
+      "sufficient_evidence_sets": [
+        [
+          2
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        2,
+        1,
+        0
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "5xx 连续 5 分钟高于 2%",
+          "P95 高于 800 毫秒",
+          "冒烟用例失败",
+          "数据写入错误"
+        ],
+        "covered_point_indexes": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "四项回滚条件完整。"
+      }
+    },
+    {
+      "id": 8,
+      "question": "数据库变更发布失败后，完整回滚步骤是什么？",
+      "relevant_chunk_indexes": [
+        1,
+        2,
+        3
+      ],
+      "sufficient_evidence_sets": [
+        [
+          2
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        1,
+        2,
+        0
+      ],
+      "recall_at_1": 0.3333333333333333,
+      "recall_at_3": 0.6666666666666666,
+      "sufficient_evidence_hit_at_1": 0,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "停止新流量",
+          "恢复上一版本",
+          "执行回滚 SQL",
+          "重新检查健康接口",
+          "30 分钟内提交事故初报"
+        ],
+        "covered_point_indexes": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "Top-3 下完整覆盖五个回滚步骤。"
+      }
+    },
+    {
+      "id": 9,
+      "question": "普通功能能否走紧急发布流程？",
+      "relevant_chunk_indexes": [
+        0
+      ],
+      "sufficient_evidence_sets": [
+        [
+          0
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        0,
+        3,
+        1
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "不能",
+          "仅限紧急安全修复",
+          "值班经理和系统负责人共同批准"
+        ],
+        "covered_point_indexes": [
+          0
+        ],
+        "answer_point_coverage": 0.3333333333333333,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "答出普通功能不能使用，遗漏紧急流程适用范围和双重批准条件。"
+      }
+    },
+    {
+      "id": 10,
+      "question": "测试环境允许在什么时间发布？",
+      "relevant_chunk_indexes": [
+        3
+      ],
+      "sufficient_evidence_sets": [
+        [
+          3
+        ]
+      ],
+      "retrieved_chunk_indexes": [
+        3,
+        0,
+        1
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "sufficient_evidence_hit_at_1": 1,
+      "sufficient_evidence_hit_at_3": 1,
+      "manual_evaluation": {
+        "expected_points": [
+          "文档未规定",
+          "不能推测"
+        ],
+        "covered_point_indexes": [
+          0,
+          1
+        ],
+        "answer_point_coverage": 1.0,
+        "citation_faithful": true,
+        "unsupported_claims": [],
+        "notes": "明确说明文档未规定，且没有推测。"
+      }
+    }
+  ],
+  "summary": {
+    "mean_recall_at_1": 0.8333333333333333,
+    "mean_recall_at_3": 0.9166666666666667,
+    "mean_sufficient_evidence_hit_at_1": 0.9,
+    "mean_sufficient_evidence_hit_at_3": 1.0,
+    "mean_answer_point_coverage": 0.8833333333333332,
+    "citation_faithfulness_rate": 0.9
+  },
+  "answer_and_citation_scoring_method": "manual"
+}

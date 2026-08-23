@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "evaluation_run": "2026-08-02-and-2026-08-04-baseline",
+  "scoring_method": "manual",
+  "scores": [
+    {
+      "case_id": 1,
+      "covered_point_indexes": [0, 1],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "固定发布窗口完整，引用支持回答。"
+    },
+    {
+      "case_id": 2,
+      "covered_point_indexes": [0, 1, 2, 3],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "四项发布前检查完整。"
+    },
+    {
+      "case_id": 3,
+      "covered_point_indexes": [0],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "经过验证的回滚 SQL 要求完整。"
+    },
+    {
+      "case_id": 4,
+      "covered_point_indexes": [0],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "答出版本格式，遗漏同一版本号不得复用。"
+    },
+    {
+      "case_id": 5,
+      "covered_point_indexes": [0, 1, 2],
+      "citation_faithful": false,
+      "unsupported_claims": ["未回滚且观察期结束后提交事故初报"],
+      "notes": "三个核心流程要点均覆盖，但额外条件关系没有来源支持。"
+    },
+    {
+      "case_id": 6,
+      "covered_point_indexes": [0, 1, 2],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "三项观察指标完整。"
+    },
+    {
+      "case_id": 7,
+      "covered_point_indexes": [0, 1, 2, 3],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "四项回滚条件完整。"
+    },
+    {
+      "case_id": 8,
+      "covered_point_indexes": [0, 1, 2, 3, 4],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "Top-3 下完整覆盖五个回滚步骤。"
+    },
+    {
+      "case_id": 9,
+      "covered_point_indexes": [0],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "答出普通功能不能使用，遗漏紧急流程适用范围和双重批准条件。"
+    },
+    {
+      "case_id": 10,
+      "covered_point_indexes": [0, 1],
+      "citation_faithful": true,
+      "unsupported_claims": [],
+      "notes": "明确说明文档未规定，且没有推测。"
+    }
+  ]
+}

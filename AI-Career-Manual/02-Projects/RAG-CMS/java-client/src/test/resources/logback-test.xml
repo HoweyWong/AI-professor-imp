@@ -1,0 +1,4 @@
+<configuration>
+    <logger name="io.netty.resolver.dns.DnsServerAddressStreamProviders" level="OFF"/>
+    <root level="OFF"/>
+</configuration>
