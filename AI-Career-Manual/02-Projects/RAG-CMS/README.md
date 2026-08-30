@@ -58,6 +58,41 @@ cp .env.example .env
 curl http://127.0.0.1:8000/health
 ```
 
+## Docker 启动
+
+Docker Compose 会在本地构建 Python 3.9 镜像，将模型配置作为运行时环境变量注入，并把宿主机 `data/` 挂载到容器 `/app/data`。`.env`、本地虚拟环境和运行数据不会进入镜像构建上下文。
+
+```bash
+docker compose up --build -d --wait
+docker compose ps
+curl http://127.0.0.1:8000/health
+```
+
+当前 macOS 开发环境使用 Colima 提供 Docker 运行时：
+
+```bash
+colima start --cpu 2 --memory 4 --disk 20 --runtime docker
+docker version
+docker compose version
+docker buildx version
+```
+
+`--wait` 会等到 Dockerfile 中的健康检查通过再返回。仅看到容器进程为 `running` 时立即请求，仍可能处于 `health: starting`。
+
+停止服务但保留宿主机数据：
+
+```bash
+docker compose down
+```
+
+Compose 会读取当前 Shell 或项目 `.env` 中的 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL` 和 `EMBEDDING_MODEL`，但不会把 `.env` 复制进镜像。未配置模型时，健康检查和文档上传仍可使用，问答接口按现有约定返回 503。调用真实模型前仍须确认服务归属与文档数据授权。
+
+没有可用 Docker 运行时时，只能运行静态契约测试，不能把 Docker 启动标记为验收通过：
+
+```bash
+.venv/bin/python -m unittest tests.test_container_contract -v
+```
+
 模型配置需要填写 `.env` 中的 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL` 和 `EMBEDDING_MODEL`。调用问答接口会把检索到的文档片段发送给已配置的模型服务；只应使用已获批准处理这些文档的服务。`.env` 已被 Git 忽略，不应提交密钥。
 
 完成文档上传、切分和向量化后，可对单个文档提问：

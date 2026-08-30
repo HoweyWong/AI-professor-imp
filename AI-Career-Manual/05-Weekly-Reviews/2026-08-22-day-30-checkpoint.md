@@ -2,7 +2,7 @@
 
 ## 检查结论
 
-第 30 天目标尚未达到验收完成。Python API、RAG 基础链路、架构图和 README 已有证据；Java 调用、Docker 启动和 15 张有效知识卡未完成。
+第 30 天目标尚未达到验收完成。Python API、RAG 基础链路、Java 调用、Docker 运行、架构图和 README 已有证据；15 张有效知识卡仍未完成，Docker 第 3～4 项等待用户确认。
 
 ## 逐项证据
 
@@ -10,10 +10,10 @@
 |---|---|---|
 | 能独立写 Python API | 已具备项目证据 | FastAPI 已提供健康检查、上传、切分、Embedding、问答和模型代理路由 |
 | 跑通 RAG 基础链路 | 已具备历史验收证据 | 固定语料已生成 `metadata.json`、`chunks.json`、`vectors.json`，十题问答与引用已有基线 |
-| Java 调用 Python 服务 | 未完成 | 当前没有 Maven/Gradle Java 客户端工程，只有 Spring Boot 演进说明 |
-| Docker 启动 | 未完成且环境受限 | 当前没有 Dockerfile/Compose 文件，主机执行 `docker --version` 返回命令不存在 |
+| Java 调用 Python 服务 | 已完成 | Java 11 `WebClient` 客户端、完整引用 DTO、五项假服务测试及 Java → FastAPI 契约测试已通过并经用户确认 |
+| Docker 启动 | 已取得运行证据，待确认 | Colima 环境已安装；镜像构建、健康检查、数据卷重建及无模型配置 503 均已实际验证 |
 | 架构图和 README | 已具备项目证据 | RAG-CMS README 可启动说明完整；Java 开发者实现解读包含 4 个 Mermaid 图 |
-| 15 张有效知识卡 | 未完成 | 按排除模板和计划文件的口径，目前有 3 张，缺 12 张 |
+| 15 张有效知识卡 | 未完成 | 按排除模板和计划文件的口径，目前有 5 张，缺 10 张 |
 
 ## 与执行手册第一阶段的额外对照
 
@@ -24,15 +24,16 @@
 | 文本切分 | 已实现 |
 | Embedding 与向量检索 | 已实现并有真实本地数据 |
 | 大模型问答与引用 | 已实现并有历史验收记录 |
-| Java 调用 | 未实现 |
-| Docker 启动 | 未实现 |
+| Java 调用 | 已实现并完成本地契约验收 |
+| Docker 启动 | 制品、实际容器健康、数据卷和 503 边界已有证据，待用户确认 |
 
 ## 缺口排序
 
 ```text
 先完成 Week 3 验收
-→ Java 调用 Python 最小闭环
-→ Dockerfile 与 Compose（需先具备 Docker 环境或约定静态验收）
+→ Java 调用 Python 最小闭环（已完成）
+→ Dockerfile 与 Compose 静态闭环（已完成）
+→ 在可用 Docker 环境完成实际启动和数据卷验收（已有证据，待确认）
 → 从既有项目主题逐张补有效知识卡
 ```
 
@@ -47,10 +48,10 @@
 
 ## 下一项建议
 
-Week 4 唯一主目标：完成 Spring Boot 调用 `/v1/documents/{document_id}/questions` 的最小闭环，包括请求 DTO、回答与引用 DTO、超时/502/503 映射和一个针对性集成测试。
+Week 5 唯一主目标：在可用 Docker 环境构建并启动现有静态制品，验证 `/health`、未配置模型时的 503 和 `data/` 挂载在容器重建后仍保留；若运行环境仍不可用，保持验收未完成，不扩展新功能。
 
 ## 三层状态
 
-- 代码完成：第一阶段 Python/RAG 部分完成；Java 与 Docker 未完成；
-- 验收完成：RAG 历史场景已验收，第 30 天整体未验收；
-- 学习完成：四层评测已形成复述证据，Java/Docker 尚未进入理解检查。
+- 代码完成：Python/RAG、Java 调用及 Docker 制品完成；
+- 验收完成：RAG 与 Java 场景已验收；Docker 已有运行证据但待确认，知识卡数量未达标，因此第 30 天整体仍未验收；
+- 学习完成：四层评测与 Java/Python 契约已完成复述；Docker 已理解静态边界并观察实际启动时序，待理解检查。

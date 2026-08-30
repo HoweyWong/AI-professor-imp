@@ -1,0 +1,15 @@
+services:
+  rag-cms-api:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      RAG_CMS_DATA_DIR: /app/data/documents
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

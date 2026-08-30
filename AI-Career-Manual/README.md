@@ -21,7 +21,7 @@ AI 应用开发与架构转型工作区。
 - Python 3.9.6
 - Java 11.0.11
 - Git 2.50.1
-- Docker：未安装或未加入 PATH
+- Docker CLI 29.7.2、Compose 5.5.0、Buildx 0.36.1；Colima 0.10.3 提供本地 Docker 运行时
 
 ## 执行检查
 
