@@ -106,3 +106,58 @@ citations[0].startOffset = 20
 ## 下一项目时段
 
 启动不调用真实外部模型的本地 Python 约定场景，让 Java 客户端完成一次 Java → Python 请求并记录真实接口输出；若 Python 必须调用外部模型，则先确认数据授权或使用明确的本地替身边界。
+
+## 第 4 次｜Java → Python 本地契约联调
+
+### 替身边界
+
+新增 `tests/contract_server.py`。它保留真实 FastAPI 应用、路由、Pydantic 请求校验、Prompt 构造、引用映射和 HTTP 输出，仅将 Embedding、向量检索与回答模型替换为固定本地函数。固定的 `.invalid` 模型地址不会被访问，测试中也没有真实文档数据或密钥。
+
+### 真实请求链路
+
+```text
+Java documentId=contract-document、question=发布前做什么？、topK=1
+→ RagCmsClient / QuestionRequest
+→ POST 127.0.0.1:18080/v1/documents/contract-document/questions
+→ FastAPI ask_document / QuestionRequest
+→ 固定 query vector [1.0, 0.0]
+→ 固定 Top-1 Chunk（chunk=2、offset=20..34、score=0.91）
+→ 固定模型回答“完成回归测试。[来源 1]”
+→ FastAPI answer + citations JSON
+→ Java QuestionResponse + Citation DTO
+```
+
+### 三个可观察实验
+
+#### 实验 1｜Python 正常路径
+
+- 改变什么：向真实 FastAPI 路由发送固定问题和 `top_k=1`；
+- 观察什么：HTTP 200，答案含 `[来源 1]`，引用含文档、Chunk、偏移和分数；
+- 结论：路由校验、Prompt 构造和引用 JSON 映射可在不访问外部服务时闭环。
+
+#### 实验 2｜Java → Python 契约
+
+- 改变什么：不再使用 Java 内置假服务，由 `RagCmsClient` 通过真实 HTTP 调用 FastAPI；
+- 观察什么：Java 断言 document ID、问题、答案及全部关键引用字段；
+- 结论：Java DTO 与当前 Python JSON 契约一致，引用没有在跨语言边界丢失。
+
+#### 实验 3｜参数边界失败
+
+- 改变什么：把 `top_k` 从 1 改为 11；
+- 观察什么：FastAPI 在调用 Embedding、检索和模型替身前返回 HTTP 422；
+- 结论：Python 的 `1..10` 约束仍是服务端最终防线，Java 的本地校验不能替代服务端校验。
+
+### 验证结果
+
+- Python `compileall`：通过（缓存定向到 `/tmp`，规避执行沙箱对系统缓存目录的限制）；
+- Python 单元测试：25 项通过；
+- Java → Python 指定契约测试：通过；
+- Java 完整测试套件：通过，其中无契约服务环境变量时跨语言测试按设计跳过；
+- 未调用真实 Embedding、向量数据或回答模型，未验证网络、真实配置、数据授权和真实评分结果。
+
+### 当前三层状态
+
+- 代码完成：是；
+- 验收完成：是，用户于 2026-08-30 确认 Java → Python 约定场景通过；
+- 学习完成：是，用户能按“Java 断言 → Python 原始 JSON → Python 引用/检索或 Java DTO 映射”顺序定位跨语言契约故障；
+- Week 4 第 4 项：已在用户确认后勾选。
