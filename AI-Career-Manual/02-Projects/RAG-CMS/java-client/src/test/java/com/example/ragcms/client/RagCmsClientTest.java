@@ -36,7 +36,8 @@ class RagCmsClientTest {
                     "\"answer\":\"完成回归测试。[来源 1]\"," +
                     "\"citations\":[{" +
                     "\"reference\":1,\"document_id\":\"document-1\",\"chunk_index\":2," +
-                    "\"source_path\":\"document-1/source.md\",\"start_offset\":20," +
+                    "\"source_path\":\"document-1/source.md\"," +
+                    "\"original_filename\":\"release.md\",\"start_offset\":20," +
                     "\"end_offset\":34,\"score\":0.91}]}" );
         });
 
@@ -47,6 +48,7 @@ class RagCmsClientTest {
         assertThat(response.getCitations()).hasSize(1);
         assertThat(response.getCitations().get(0).getChunkIndex()).isEqualTo(2);
         assertThat(response.getCitations().get(0).getStartOffset()).isEqualTo(20);
+        assertThat(response.getCitations().get(0).getOriginalFilename()).isEqualTo("release.md");
         assertThat(requestBody.get()).contains("\"question\":\"发布前做什么？\"");
         assertThat(requestBody.get()).contains("\"top_k\":3");
     }

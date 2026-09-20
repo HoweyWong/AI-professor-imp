@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.chunks import create_chunks
 from app.documents import save_document
 from app.embeddings import embed_texts
-from app.retrieval import search_vectors
+from app.retrieval import search_documents, search_vectors
 from app.vectors import create_embeddings
 
 app = FastAPI(title="RAG-CMS API", version="0.1.0")
@@ -29,6 +29,10 @@ class ChatRequest(BaseModel):
 class QuestionRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=3, ge=1, le=10)
+
+
+class MultiDocumentQuestionRequest(QuestionRequest):
+    document_ids: list[str] = Field(min_length=1, max_length=20)
 
 
 def configured_model() -> tuple[str, str, str]:
@@ -67,7 +71,8 @@ def answer_text(response: dict) -> str:
 
 def build_question_messages(question: str, matches: list[dict[str, object]]) -> list[dict[str, str]]:
     context_parts = [
-        f"[来源 {index}] 文件：{match['source_path']}；片段：{match['chunk_index']}\n{match['content']}"
+        f"[来源 {index}] 文件：{match.get('original_filename') or match['source_path']}；"
+        f"文档ID：{match['document_id']}；片段：{match['chunk_index']}\n{match['content']}"
         for index, match in enumerate(matches, start=1)
     ]
     context = "\n\n".join(context_parts)
@@ -131,6 +136,7 @@ async def ask_document(document_id: str, query: QuestionRequest) -> dict[str, ob
             "document_id": match["document_id"],
             "chunk_index": match["chunk_index"],
             "source_path": match["source_path"],
+            "original_filename": match.get("original_filename"),
             "start_offset": match["start_offset"],
             "end_offset": match["end_offset"],
             "score": match["score"],
@@ -138,6 +144,55 @@ async def ask_document(document_id: str, query: QuestionRequest) -> dict[str, ob
         for index, match in enumerate(matches, start=1)
     ]
     return {"document_id": document_id, "question": question, "answer": answer_text(response), "citations": citations}
+
+
+@app.post("/v1/questions")
+async def ask_documents(query: MultiDocumentQuestionRequest) -> dict[str, object]:
+    question = query.question.strip()
+    if not question:
+        raise HTTPException(422, "问题不能只包含空白字符")
+
+    document_ids: list[str] = []
+    for value in query.document_ids:
+        document_id = value.strip()
+        if not document_id:
+            raise HTTPException(422, "文档 ID 不能只包含空白字符")
+        if document_id not in document_ids:
+            document_ids.append(document_id)
+
+    embedding_model, vectors = await asyncio.to_thread(embed_texts, [question])
+    matches = search_documents(
+        document_ids, embedding_model, vectors[0], query.top_k
+    )
+    if not matches:
+        raise HTTPException(409, "没有检索到可用于回答的文档片段")
+
+    base_url, api_key, model = configured_model()
+    payload = {
+        "model": model,
+        "messages": build_question_messages(question, matches),
+        "temperature": 0.2,
+    }
+    response = await asyncio.to_thread(invoke_model, payload, base_url, api_key)
+    citations = [
+        {
+            "reference": index,
+            "document_id": match["document_id"],
+            "chunk_index": match["chunk_index"],
+            "source_path": match["source_path"],
+            "original_filename": match.get("original_filename"),
+            "start_offset": match["start_offset"],
+            "end_offset": match["end_offset"],
+            "score": match["score"],
+        }
+        for index, match in enumerate(matches, start=1)
+    ]
+    return {
+        "document_ids": document_ids,
+        "question": question,
+        "answer": answer_text(response),
+        "citations": citations,
+    }
 
 
 @app.post("/v1/chat/completions")

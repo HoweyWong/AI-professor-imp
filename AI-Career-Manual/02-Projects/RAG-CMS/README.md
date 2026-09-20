@@ -25,6 +25,7 @@
 - `POST /v1/documents/{document_id}/chunks`：按固定长度和重叠窗口创建可追溯文本片段；
 - `POST /v1/documents/{document_id}/embeddings`：调用兼容 OpenAI Embeddings API 的模型，并将向量保存到本地；
 - `POST /v1/documents/{document_id}/questions`：检索相似 Chunk、调用模型生成回答，并返回可追溯引用；
+- `POST /v1/questions`：在 1～20 个指定文档中执行全局 Top-K 检索，适用于受控办公文件集合；
 - `POST /v1/chat/completions`：调用兼容 OpenAI Chat Completions API 的上游模型服务；
 - 未配置模型环境变量时，问答接口返回明确的 `503`，不会发送外部请求。
 
@@ -95,6 +96,8 @@ Compose 会读取当前 Shell 或项目 `.env` 中的 `LLM_BASE_URL`、`LLM_API_
 
 模型配置需要填写 `.env` 中的 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL` 和 `EMBEDDING_MODEL`。调用问答接口会把检索到的文档片段发送给已配置的模型服务；只应使用已获批准处理这些文档的服务。`.env` 已被 Git 忽略，不应提交密钥。
 
+Embedding 输入按最多 10 条文本一批发送，避免超过当前兼容服务的批量输入边界；多批次必须全部成功后才会写入文档向量文件。
+
 完成文档上传、切分和向量化后，可对单个文档提问：
 
 ```bash
@@ -103,7 +106,17 @@ curl -X POST http://127.0.0.1:8000/v1/documents/10da35e7-0b7b-4541-9d95-dc70dffc
   -d '{"question":"这份文档的发布前置条件是什么？","top_k":3}'
 ```
 
-响应包含 `answer` 和 `citations`。每条引用提供文档 ID、Chunk 序号、原始文件路径、字符偏移及相似度；模型回答会使用 `[来源 N]` 与引用列表对应。问答只使用该文档检索出的上下文，找不到依据时应明确说明。
+响应包含 `answer` 和 `citations`。每条引用提供文档 ID、原始文件名、Chunk 序号、保存路径、字符偏移及相似度；模型回答会使用 `[来源 N]` 与引用列表对应。单文档问答只使用该文档的上下文；多文档问答对各文档候选片段进行全局 Top-K 排序。找不到依据时应明确说明。
+
+对一个受控文件集合提问：
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/questions \
+  -H 'Content-Type: application/json' \
+  -d '{"document_ids":["文档ID-1","文档ID-2"],"question":"开发环境前端如何构建？","top_k":3}'
+```
+
+调用方必须明确给出文档 ID，服务不会扫描任意本地目录。任一文档不存在、未切分、未向量化或向量模型不一致时，本次请求整体失败，不会静默忽略后形成不完整答案。
 
 ## 暂不做
 

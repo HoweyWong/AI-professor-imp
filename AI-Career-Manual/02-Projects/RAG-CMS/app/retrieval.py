@@ -21,6 +21,7 @@ def search_vectors(
 ) -> list[dict[str, object]]:
     directory, chunks = load_chunks(document_id)
     metadata = json.loads((directory / "metadata.json").read_text(encoding="utf-8"))
+    original_filename = metadata.get("original_filename")
     vector_store = metadata.get("vector_store")
     if not isinstance(vector_store, dict):
         raise HTTPException(409, "请先为文档生成 Embedding")
@@ -46,8 +47,27 @@ def search_vectors(
             "chunk_index": chunk_index,
             "content": chunk["content"],
             "source_path": chunk["source_path"],
+            "original_filename": original_filename,
             "start_offset": chunk["start_offset"],
             "end_offset": chunk["end_offset"],
             "score": cosine_similarity(query_vector, vector),
         })
     return sorted(matches, key=lambda item: float(item["score"]), reverse=True)[:top_k]
+
+
+def search_documents(
+    document_ids: list[str],
+    embedding_model: str,
+    query_vector: list[float],
+    top_k: int,
+) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+    for document_id in document_ids:
+        candidates.extend(
+            search_vectors(document_id, embedding_model, query_vector, top_k)
+        )
+    return sorted(
+        candidates,
+        key=lambda item: float(item["score"]),
+        reverse=True,
+    )[:top_k]

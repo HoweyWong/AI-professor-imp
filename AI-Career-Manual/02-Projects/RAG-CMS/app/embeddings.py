@@ -4,7 +4,7 @@ from urllib import error, request
 
 from fastapi import HTTPException
 
-BATCH_SIZE = 100
+BATCH_SIZE = 10
 
 
 def embedding_settings() -> tuple[str, str, str]:

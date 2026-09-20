@@ -7,6 +7,7 @@ public final class Citation {
     private String documentId;
     private int chunkIndex;
     private String sourcePath;
+    private String originalFilename;
     private int startOffset;
     private int endOffset;
     private double score;
@@ -50,6 +51,16 @@ public final class Citation {
     @JsonProperty("source_path")
     public void setSourcePath(String sourcePath) {
         this.sourcePath = sourcePath;
+    }
+
+    @JsonProperty("original_filename")
+    public String getOriginalFilename() {
+        return originalFilename;
+    }
+
+    @JsonProperty("original_filename")
+    public void setOriginalFilename(String originalFilename) {
+        this.originalFilename = originalFilename;
     }
 
     @JsonProperty("start_offset")
