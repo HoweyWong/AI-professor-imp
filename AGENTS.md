@@ -5,14 +5,14 @@
 本仓库是 AI 应用开发与架构转型工作区。当前唯一项目主线是
 `AI-Career-Manual/02-Projects/RAG-CMS/`，目标是完成带来源引用的 CMS 技术文档问答最小闭环。
 
-除非任务明确要求，不要扩展到 `week-01.md` 中“本周不做”的方向，也不要替用户勾选任务清单。
+除非任务明确要求，不要扩展到当前编号最新 `week-*.md` 中“本周不做”的方向，也不要替用户勾选任务清单。`week-01.md` 仅用于追溯首周范围。
 
 ## 开始任务前
 
 1. 阅读 `AI-Career-Manual/README.md`。
 2. 涉及 RAG-CMS 时，再阅读：
    - `AI-Career-Manual/02-Projects/RAG-CMS/README.md`
-   - `AI-Career-Manual/02-Projects/RAG-CMS/week-01.md`
+   - `AI-Career-Manual/02-Projects/RAG-CMS/` 中按文件名排序编号最新的 `week-*.md`
 3. 涉及学习计划或复盘时，读取 `AI-Career-Manual/05-Weekly-Reviews/` 中日期最新的相关文件。
 4. 先执行 `git status --short`。工作区可能包含用户正在进行的修改；保留无关改动，不覆盖、不清理。
 
@@ -20,11 +20,19 @@
 
 ### 检查项目与知识计划进度
 
+Bash/zsh 环境：
+
 ```bash
 ./AI-Career-Manual/automation/ai-career-status.sh --no-notify
 ```
 
-这是原 Kiro 手动 Hook 在 Codex 中的等价操作。用户说“检查计划”“查看进度”或“下一步做什么”时，执行该命令并结合对应计划文件给出简短结论。只有用户明确要求桌面通知时，才省略 `--no-notify`。
+原生 Windows PowerShell：
+
+```powershell
+pwsh -File .\AI-Career-Manual\automation\ai-career-status.ps1 -NoNotify
+```
+
+两版脚本均按文件名自动选择最新项目和知识周计划。这是原 Kiro 手动 Hook 在 Codex 中的等价操作。用户说“检查计划”“查看进度”或“下一步做什么”时，执行当前平台对应的无通知命令并结合计划文件给出简短结论。只有用户明确要求桌面通知时，才省略 `--no-notify` 或 `-NoNotify`。
 
 ### 初始化与启动 RAG-CMS
 
@@ -45,6 +53,17 @@ cp .env.example .env
 - API 行为变化应同步更新 RAG-CMS README。
 - 新增功能应补充与风险相称的测试；当前仓库尚无测试套件时，至少执行语法检查和针对性接口验证。
 - 复盘、知识卡和行业报告沿用各目录现有模板与中文写作风格。
+
+## RAG-CMS 工具链与验证边界
+
+- Python 依赖以 `AI-Career-Manual/02-Projects/RAG-CMS/requirements.txt` 为准，测试沿用标准库 `unittest`；Java 依赖和版本以 `java-client/pom.xml` 为准，要求 Java 11，仓库未提供 Maven Wrapper。
+- 当前没有 CI、Python lint/type-check 配置或完整依赖锁文件；不得将本地命令结果表述为 CI 通过，也不要把 README 中的“建议技术栈”视为已接入配置。
+- Python 代码改动除 `compileall` 外，应运行受影响的 `unittest`；跨模块改动运行 `.venv/bin/python -m unittest discover -s tests -v`。
+- Java 客户端改动运行 `cd java-client && mvn test`。该测试使用本地假服务，不等同于真实 Python/RAG 链路验收。
+- Python API 或 Java DTO 契约改动，按 RAG-CMS README 启动 `tests.contract_server`，并设置 `RAG_CMS_CONTRACT_BASE_URL` 运行 `RagCmsPythonContractTest`。环境变量未设置时，该测试可能跳过。
+- Dockerfile、Compose 或镜像边界改动至少运行 `tests.test_container_contract`。仅在 Docker 运行时可用且 `docker compose up --build -d --wait`、`/health` 成功后，才能标记容器启动验收通过。
+- 仓库脚本与文档命令以 Bash/zsh 和 `.venv/bin` 路径为基准；在原生 Windows PowerShell 中不得未经适配或验证直接照搬。
+- `/health` 仅表示 API 进程可用，不代表模型配置、真实问答、外部数据授权或 Java→Python 契约已完成验收。
 
 ## 教学式项目执行协议
 

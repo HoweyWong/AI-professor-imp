@@ -21,21 +21,33 @@
 
 ## 手动监督
 
-在工作区根目录执行：
+脚本会自动选择 RAG-CMS 目录中编号最新的 `week-*.md`、`05-Weekly-Reviews/` 中日期最新的 `knowledge-week-*.md`，显示第一个未完成任务。最新周全部完成时，它会提示复盘并创建下一周计划。它不会读取日历、提醒事项、浏览记录或其他个人文件，也不会自动勾选任务。
+
+Bash/zsh（macOS 等环境）默认尝试发送 macOS 通知：
 
 ```bash
 ./AI-Career-Manual/automation/ai-career-status.sh
 ```
 
-脚本会自动选择 RAG-CMS 目录中编号最新的 `week-*.md`，显示第一个未完成任务，并发送一条 macOS 通知。最新周全部完成时，它会提示复盘并创建下一周计划。它不会读取日历、提醒事项、浏览记录或其他个人文件，也不会自动勾选任务。
-
-在 Codex 或仅需要终端结果时执行：
+只需要终端结果时：
 
 ```bash
 ./AI-Career-Manual/automation/ai-career-status.sh --no-notify
 ```
 
-脚本会同时自动选取 `05-Weekly-Reviews/` 中日期最新的 `knowledge-week-*.md`，因此项目和知识计划滚动时都不需要修改脚本。Kiro Hook 继续调用默认模式并发送通知。
+原生 Windows PowerShell 默认尝试发送 Windows 气泡通知；当前会话不支持时会降级为终端输出：
+
+```powershell
+pwsh -File .\AI-Career-Manual\automation\ai-career-status.ps1
+```
+
+只需要终端结果时：
+
+```powershell
+pwsh -File .\AI-Career-Manual\automation\ai-career-status.ps1 -NoNotify
+```
+
+PowerShell 入口也接受 `--no-notify`，便于与 Bash/zsh 入口保持一致。Kiro Hook 继续调用默认模式并发送通知。
 
 ## 知识储备监督
 
